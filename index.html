@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Copy Count - Node Manager</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Copy Count - Node Manager</h1>
+            <div class="filename-section">
+                <input type="text" id="filenameInput" class="filename-input" placeholder="Enter filename for save (optional)" value="">
+                <div class="save-info">
+                    💡 <strong>Save:</strong> Uses default filename • <strong>Save As:</strong> Choose location and filename (modern browsers only)
+                </div>
+            </div>
+            <div class="filename-section">
+                <input type="text" id="concatenationInput" class="filename-input" placeholder="Text to prepend when copying (cleared after copy)" value="">
+                <div class="save-info" style="font-size: 10px;">
+                    💡 Text in this box will be prepended to any copied node content
+                </div>
+            </div>
+            <div class="stats">
+                <button class="btn-cycle" onclick="cycleCopy()">Cycle</button>
+                <div class="stat">
+                    <div class="stat-label">Total Copies</div>
+                    <div class="stat-value" id="totalCount">0</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-label">Nodes</div>
+                    <div class="stat-value" id="nodeCount">0</div>
+                </div>
+            </div>
+            <div class="controls">
+                <button class="btn-add" onclick="addNode()">+ Add Node</button>
+                <button class="btn-add" onclick="addTripleNode()" style="background: #9f7aea;">+ Add Triple Node</button>
+                <button class="btn-add" onclick="addMagnode()" style="background: #f6ad55;">+ Add Magnode</button>
+                <button class="btn-add" onclick="addInstanceNode()" style="background: #4299e1;">+ Add Instance Node</button>
+                <button class="btn-add" onclick="addStage1Generator()" style="background: #0077b5;">+ Stage 1 Generator</button>
+                <button class="btn-add" onclick="addStage2Generator()" style="background: #0077b5;">+ Stage 2 Generator</button>
+                <button class="btn-add" onclick="addStage3Generator()" style="background: #0077b5;">+ Stage 3 Generator</button>
+                <button class="btn-primary" onclick="saveData()">Save</button>
+                <button class="btn-primary" onclick="saveAsData()">Save As</button>
+                <button class="btn-secondary" onclick="loadData()">Load</button>
+                <input type="file" id="fileInput" accept=".json" class="hidden">
+            </div>
+        </div>
+
+        <div class="nodes-container" id="nodesContainer">
+            <svg id="connectionsSvg"></svg>
+            <div class="empty-state" id="emptyState">
+                <p>No nodes yet. Click "Add Node" to get started!</p>
+                <p style="font-size: 12px; color: #999;">Drag a node's left connector (in) onto another node's right connector (out) to connect them.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Node Classes -->
+    <script src="js/nodes/NodeBase.js"></script>
+    <script src="js/nodes/RegularNode.js"></script>
+    <script src="js/nodes/TripleNode.js"></script>
+    <script src="js/nodes/MagnodeNode.js"></script>
+    <script src="js/nodes/InstanceNode.js"></script>
+    
+    <!-- Manager Classes -->
+    <script src="js/managers/NodeManager.js"></script>
+    <script src="js/managers/ConnectionManager.js"></script>
+    <script src="js/managers/ChainBuilder.js"></script>
+    <script src="js/managers/TextExtractor.js"></script>
+    <script src="js/managers/CopyManager.js"></script>
+    
+    <!-- Utility Classes -->
+    <script src="js/utils/Utils.js"></script>
+    
+    <!-- File Operations -->
+    <script src="js/file/FileManager.js"></script>
+    
+    <!-- Main Application -->
+    <script src="js/app.js"></script>
+</body>
+</html>
