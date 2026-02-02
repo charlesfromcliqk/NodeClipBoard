@@ -1293,6 +1293,201 @@ function saveAsData() { app.saveAsData(); }
 function loadData() { app.loadData(); }
 function cycleCopy() { app.cycleCopy(); }
 
+function sanitizeClipboard() {
+    const textarea = document.getElementById('clipboardTextarea');
+    if (!textarea) {
+        console.error('Clipboard textarea not found');
+        return;
+    }
+    
+    // Clear the textarea first
+    textarea.value = '';
+    
+    // Show the textarea and focus it - user will paste manually
+    showPastePrompt();
+    
+    // Set up paste event listener (this doesn't require permissions)
+    const pasteHandler = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        const pastedText = (e.clipboardData || window.clipboardData).getData('text');
+        
+        if (pastedText) {
+            // Sanitize it
+            const sanitized = Utils.sanitizeText(pastedText);
+            
+            // Copy the sanitized version back
+            copySanitizedText(sanitized);
+            
+            // Hide the textarea
+            resetTextarea();
+        }
+        
+        textarea.removeEventListener('paste', pasteHandler);
+    };
+    
+    textarea.addEventListener('paste', pasteHandler, { once: true });
+}
+
+function copySanitizedText(sanitized) {
+    const textarea = document.getElementById('clipboardTextarea');
+    textarea.value = sanitized;
+    textarea.select();
+    
+    // Use execCommand('copy') - this works without permissions when triggered by user gesture
+    try {
+        const copySuccess = document.execCommand('copy');
+        if (copySuccess) {
+            showSanitizeFeedback(true);
+        } else {
+            // If execCommand fails, show the sanitized text so user can copy manually
+            textarea.value = sanitized;
+            textarea.select();
+            alert('Sanitized text is ready. Please copy it manually (Ctrl+C or Cmd+C).');
+            showSanitizeFeedback(false);
+        }
+    } catch (err) {
+        // Show the sanitized text so user can copy manually
+        textarea.value = sanitized;
+        textarea.select();
+        alert('Sanitized text is ready. Please copy it manually (Ctrl+C or Cmd+C).');
+        showSanitizeFeedback(false);
+    }
+}
+
+function showPastePrompt() {
+    const textarea = document.getElementById('clipboardTextarea');
+    
+    // Create a modal overlay
+    let overlay = document.getElementById('sanitizeOverlay');
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'sanitizeOverlay';
+        overlay.style.position = 'fixed';
+        overlay.style.top = '0';
+        overlay.style.left = '0';
+        overlay.style.width = '100%';
+        overlay.style.height = '100%';
+        overlay.style.backgroundColor = 'rgba(0, 0, 0, 0.5)';
+        overlay.style.zIndex = '9999';
+        overlay.style.display = 'flex';
+        overlay.style.flexDirection = 'column';
+        overlay.style.alignItems = 'center';
+        overlay.style.justifyContent = 'center';
+        document.body.appendChild(overlay);
+    } else {
+        overlay.style.display = 'flex';
+    }
+    
+    // Add instruction text (create or show it)
+    let instruction = document.getElementById('sanitizeInstruction');
+    if (!instruction) {
+        instruction = document.createElement('div');
+        instruction.id = 'sanitizeInstruction';
+        instruction.style.color = 'white';
+        instruction.style.marginBottom = '10px';
+        instruction.style.textAlign = 'center';
+        instruction.style.fontSize = '16px';
+        instruction.textContent = 'Paste your content below (Ctrl+V or Cmd+V)';
+        overlay.appendChild(instruction);
+    } else {
+        instruction.style.display = 'block';
+        // Make sure it's in the overlay
+        if (instruction.parentElement !== overlay) {
+            overlay.insertBefore(instruction, overlay.firstChild);
+        }
+    }
+    
+    // Move textarea into overlay (if not already there)
+    if (textarea.parentElement !== overlay) {
+        overlay.appendChild(textarea);
+    }
+    
+    // Style the textarea for the prompt
+    textarea.style.position = 'relative';
+    textarea.style.width = '600px';
+    textarea.style.height = '300px';
+    textarea.style.opacity = '1';
+    textarea.style.pointerEvents = 'auto';
+    textarea.style.zIndex = '10000';
+    textarea.style.border = '2px solid #667eea';
+    textarea.style.borderRadius = '8px';
+    textarea.style.padding = '15px';
+    textarea.style.fontSize = '14px';
+    textarea.style.backgroundColor = 'white';
+    textarea.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.3)';
+    textarea.style.fontFamily = 'inherit';
+    textarea.style.resize = 'vertical';
+    textarea.placeholder = 'Paste your content here (Ctrl+V or Cmd+V)\n\nThe sanitized version will automatically be copied to your clipboard.';
+    
+    // Focus the textarea
+    setTimeout(() => {
+        textarea.focus();
+    }, 100);
+    
+    // Close overlay when clicking outside
+    const closeOverlay = (e) => {
+        if (e.target === overlay && e.target !== textarea && e.target !== instruction) {
+            resetTextarea();
+            overlay.removeEventListener('click', closeOverlay);
+        }
+    };
+    overlay.addEventListener('click', closeOverlay);
+}
+
+function resetTextarea() {
+    const textarea = document.getElementById('clipboardTextarea');
+    const overlay = document.getElementById('sanitizeOverlay');
+    const instruction = document.getElementById('sanitizeInstruction');
+    
+    textarea.value = '';
+    textarea.style.position = 'absolute';
+    textarea.style.left = '-9999px';
+    textarea.style.width = '1px';
+    textarea.style.height = '1px';
+    textarea.style.opacity = '0';
+    textarea.style.pointerEvents = 'none';
+    textarea.style.zIndex = 'auto';
+    textarea.style.border = '';
+    textarea.style.borderRadius = '';
+    textarea.style.padding = '';
+    textarea.style.fontSize = '';
+    textarea.style.backgroundColor = '';
+    textarea.style.boxShadow = '';
+    textarea.style.transform = '';
+    textarea.style.fontFamily = '';
+    textarea.style.resize = '';
+    textarea.placeholder = '';
+    
+    // Move textarea back to body if needed
+    if (overlay && textarea.parentElement === overlay) {
+        document.body.appendChild(textarea);
+    }
+    
+    // Hide overlay
+    if (overlay) {
+        overlay.style.display = 'none';
+    }
+    
+    if (instruction) {
+        instruction.style.display = 'none';
+    }
+}
+
+function showSanitizeFeedback(success) {
+    const button = document.querySelector('button[onclick="sanitizeClipboard()"]');
+    if (button) {
+        const originalText = button.textContent;
+        button.textContent = success ? '✓ Sanitized!' : 'Failed';
+        button.style.background = success ? '#48bb78' : '#e53e3e';
+        setTimeout(() => {
+            button.textContent = originalText;
+            button.style.background = '#667eea';
+        }, 2000);
+    }
+}
+
 // Initialize app when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
     app = App.getInstance();

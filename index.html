@@ -44,7 +44,9 @@
                 <button class="btn-primary" onclick="saveData()">Save</button>
                 <button class="btn-primary" onclick="saveAsData()">Save As</button>
                 <button class="btn-secondary" onclick="loadData()">Load</button>
+                <button class="btn-secondary" onclick="sanitizeClipboard()" style="background: #667eea;">Sanitize Clipboard</button>
                 <input type="file" id="fileInput" accept=".json" class="hidden">
+                <textarea id="clipboardTextarea" style="position: absolute; left: -9999px; opacity: 0; width: 1px; height: 1px;"></textarea>
             </div>
         </div>
 
