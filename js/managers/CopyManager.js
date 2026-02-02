@@ -52,7 +52,7 @@ class CopyManager {
 
         const concatenationInput = document.getElementById('concatenationInput');
         const prefix = concatenationInput?.value.trim() || '';
-        const combinedText = (prefix ? prefix : '') + texts.join('\n');
+        const combinedText = (prefix ? prefix : '') + texts.join('');
 
         navigator.clipboard.writeText(combinedText).then(() => {
             magnodesToCycle.forEach(id => {
